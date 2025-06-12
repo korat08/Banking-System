@@ -45,6 +45,7 @@ public class AccountService {
             return ResponseEntity.badRequest().body("Insufficient balance!");
         }
 
+
         account.setBalance(account.getBalance().subtract(withDrawRequest.getAmount()));
         accountRepository.save(account);
 
@@ -60,6 +61,7 @@ public class AccountService {
 
     @Transactional
     public ResponseEntity<?> depositMoney(DepositRequest depositRequest) {
+
         Optional<Account> accountOpt = accountRepository.findById(depositRequest.getAccountNumber());
 
         if(accountOpt.isEmpty()){
@@ -67,7 +69,7 @@ public class AccountService {
         }
 
         Account account = accountOpt.get();
-        if (depositRequest.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+        if (depositRequest.getAmount().compareTo(BigDecimal.ZERO) < 0) {
             return ResponseEntity.badRequest().body("Deposit amount must be greater than zero!");
         }
 
@@ -86,6 +88,7 @@ public class AccountService {
 
     @Transactional
     public ResponseEntity<?> transferMoney(TransferRequest transferRequest) {
+
         Optional<Account> accountOpt1 = accountRepository.findById(transferRequest.getSenderAccountNumber());
         Optional<Account> accountOpt2 = accountRepository.findById(transferRequest.getReceiverAccountNumber());
 
@@ -105,6 +108,7 @@ public class AccountService {
 
         senderAccount.setBalance(senderAccount.getBalance().subtract(transferRequest.getAmount()));
         receiverAccount.setBalance(receiverAccount.getBalance().add(transferRequest.getAmount()));
+
         accountRepository.save(senderAccount);
         accountRepository.save(receiverAccount);
 
@@ -123,24 +127,41 @@ public class AccountService {
     }
 
     public ResponseEntity<?> getBalance(String accountNumber) {
-        if(!accountRepository.existsById(accountNumber)){
+
+        Optional<Account> opt = accountRepository.findById(accountNumber);
+
+        if(opt.isEmpty()){
             return ResponseEntity.badRequest().body("Account Number not Exist....");
         }
-        Optional<Account> opt = accountRepository.findById(accountNumber);
+
         Account account = opt.get();
-        return ResponseEntity.ok(" Account Balance is :  " + account.getBalance() );
+        return ResponseEntity.ok(" Account Details :  " + account);
     }
 
     public ResponseEntity<?> getAccountStatement(String accountNumber) {
+
         if(!accountRepository.existsById(accountNumber)){
             return ResponseEntity.badRequest().body("Account Number not Exist....");
         }
 
-        List<Transaction> transactions = transactionRepository.findByAccount_AccountNumber(accountNumber);
+        List<Transaction> transactions = transactionRepository.findTransactionsByAccountNumber(accountNumber);
 
         if(transactions.isEmpty()){
             return ResponseEntity.ok("No transaction found");
         }
-        return ResponseEntity.ok(transactions);
+
+        List<TransactionDTO> dtoList = transactions.stream().map(transaction -> {
+            TransactionDTO dto = new TransactionDTO();
+            dto.setTransactionID(transaction.getTransactionID());
+            dto.setAccountNumber(transaction.getAccount().getAccountNumber());
+            dto.setTransactionType(transaction.getTransactionType());
+            dto.setFromAccountNum(transaction.getFromAccountNum());
+            dto.setToAccountNum(transaction.getToAccountNum());
+            dto.setAmount(transaction.getAmount());
+            dto.setCreatedAt(transaction.getCreatedAt());
+            return dto;
+        }).toList();
+
+        return ResponseEntity.ok(dtoList);
     }
 }

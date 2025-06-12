@@ -11,9 +11,7 @@ import java.util.List;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction,Integer> {
 
-//    @Query("SELECT t FROM Transaction t WHERE t.account.accountNumber = :accountNumber")
-//    List<Transaction> findTransactionsByAccountNumber(@Param("accountNumber") String accountNumber);
-
-    List<Transaction> findByAccount_AccountNumber(String accountNumber);
+    @Query(value = "SELECT * FROM account_transactions  WHERE account_number = ?",nativeQuery = true)
+    List<Transaction> findTransactionsByAccountNumber(String accountNumber);
 
 }

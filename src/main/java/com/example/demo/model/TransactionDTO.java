@@ -1,46 +1,17 @@
 package com.example.demo.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
+import jakarta.validation.constraints.Null;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "account_transactions")
-@EntityListeners(AuditingEntityListener.class)
-public class Transaction {
+public class TransactionDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int transactionID;
-
-    @ManyToOne
-    @JoinColumn(name = "account_number" ,nullable = false)
-    private Account account;
-
-    @NotNull
-    @Enumerated(EnumType.STRING)
+    private String accountNumber;
     private TransactionType transactionType;
-
-    @Column(nullable = true)
     private String fromAccountNum;
-
-    @Column(nullable = true)
     private String toAccountNum;
-
-    @NotNull
-    @DecimalMin(value = "1")
-    @Column(nullable = false)
     private BigDecimal amount;
-
-    @Column(nullable = false,updatable = false)
-    @CreatedDate
     private LocalDateTime createdAt;
 
     public int getTransactionID() {
@@ -51,12 +22,12 @@ public class Transaction {
         this.transactionID = transactionID;
     }
 
-    public Account getAccount() {
-        return account;
+    public String getAccountNumber() {
+        return accountNumber;
     }
 
-    public void setAccount(Account account) {
-        this.account = account;
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
     }
 
     public TransactionType getTransactionType() {

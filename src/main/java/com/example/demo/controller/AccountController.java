@@ -23,49 +23,33 @@ public class AccountController {
     }
 
     @PutMapping("withdraw")
-    public ResponseEntity<?> withDrawMoney(@RequestBody WithDrawRequest withDrawRequest){
-        try {
-            return accountService.withDrawMoney(withDrawRequest);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body("Error :- "+ e.getMessage());
-        }
+    public ResponseEntity<?> withDrawMoney(@Valid @RequestBody WithDrawRequest withDrawRequest){
+        return accountService.withDrawMoney(withDrawRequest);
     }
 
     @PutMapping("deposit")
-    public ResponseEntity<?> depositMoney(@RequestBody DepositRequest depositRequest){
-        try{
-            return accountService.depositMoney(depositRequest);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body("Error :- "+ e.getMessage());
-        }
+    public ResponseEntity<?> depositMoney(@Valid @RequestBody DepositRequest depositRequest){
+        return accountService.depositMoney(depositRequest);
     }
 
     @PutMapping("transfer")
     public ResponseEntity<?> transferMoney(@RequestBody TransferRequest transferRequest){
-        try{
-            return accountService.transferMoney(transferRequest);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body("Error :- "+ e.getMessage());
-        }
+        return accountService.transferMoney(transferRequest);
     }
 
     @GetMapping("balance/{accountNumber}")
     public ResponseEntity<?> getBalance(@PathVariable String accountNumber){
-        try{
-            return accountService.getBalance(accountNumber);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body("Error :- "+ e.getMessage());
+        if(accountNumber == null || !accountNumber.matches("\\d{10}")){
+            return ResponseEntity.badRequest().body("Account number must be exactly 10 digits");
         }
+        return accountService.getBalance(accountNumber);
     }
 
     @GetMapping("accountStatement/{accountNumber}")
     public ResponseEntity<?> getAccountStatement(@PathVariable String accountNumber){
-        try {
-            return accountService.getAccountStatement(accountNumber);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body("Error :- "+ e.getMessage());
+        if(accountNumber == null || !accountNumber.matches("\\d{10}")){
+            return ResponseEntity.badRequest().body("Account number must be exactly 10 digits");
         }
+        return accountService.getAccountStatement(accountNumber);
     }
-
-
 }
