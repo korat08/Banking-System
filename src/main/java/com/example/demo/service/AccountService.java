@@ -23,12 +23,10 @@ public class AccountService {
 
     public ResponseEntity<?> createAccount(Account account) {
 
-        if(account.getAccountNumber() == null || !account.getAccountNumber().matches("\\d{10}")){
-            return ResponseEntity.badRequest().body("Account Number Must be 10 Digit....");
-        }
         if(accountRepository.existsById(account.getAccountNumber())){
             return ResponseEntity.badRequest().body("Account Number already Exist.....");
         }
+
         accountRepository.save(account);
         return ResponseEntity.ok("Account Created Sucessfully...");
     }
