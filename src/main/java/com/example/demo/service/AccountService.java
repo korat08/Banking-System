@@ -27,10 +27,11 @@ public class AccountService {
             return ResponseEntity.badRequest().body("Account Number already Exist.....");
         }
 
-        accountRepository.save(account);
-
         Transaction transaction = new Transaction(account,account.getBalance(),TransactionType.DEPOSIT);
-        transactionRepository.save(transaction);
+
+        account.addTransaction(transaction);
+
+        accountRepository.save(account);
 
         return ResponseEntity.ok("Account Created Sucessfully...");
     }
@@ -50,10 +51,11 @@ public class AccountService {
         }
 
         account.setBalance(account.getBalance().subtract(withDrawRequest.getAmount()));
-        accountRepository.save(account);
 
         Transaction transaction = new Transaction(account,withDrawRequest.getAmount(),TransactionType.WITHDRAW);
-        transactionRepository.save(transaction);
+
+        account.addTransaction(transaction);
+        accountRepository.save(account);
 
         return ResponseEntity.ok("Withdrawal successful! New balance: " + account.getBalance());
     }
@@ -73,10 +75,11 @@ public class AccountService {
         }
 
         account.setBalance(account.getBalance().add(depositRequest.getAmount()));
-        accountRepository.save(account);
 
         Transaction transaction = new Transaction(account,depositRequest.getAmount(),TransactionType.DEPOSIT);
-        transactionRepository.save(transaction);
+
+        account.addTransaction(transaction);
+        accountRepository.save(account);
 
         return ResponseEntity.ok("Deposit successful! New balance: " + account.getBalance());
     }
@@ -108,11 +111,12 @@ public class AccountService {
         senderAccount.setBalance(senderAccount.getBalance().subtract(transferRequest.getAmount()));
         receiverAccount.setBalance(receiverAccount.getBalance().add(transferRequest.getAmount()));
 
+        Transaction transaction = new Transaction(senderAccount,TransactionType.TRANSFER,senderAccount.getAccountNumber(), receiverAccount.getAccountNumber(), transferRequest.getAmount());
+
+        senderAccount.addTransaction(transaction);
+        receiverAccount.addTransaction(transaction);
         accountRepository.save(senderAccount);
         accountRepository.save(receiverAccount);
-
-        Transaction transaction = new Transaction(senderAccount,TransactionType.TRANSFER,senderAccount.getAccountNumber(), receiverAccount.getAccountNumber(), transferRequest.getAmount());
-        transactionRepository.save(transaction);
 
         return ResponseEntity.ok("Transfer SuccessFully............");
     }
@@ -135,9 +139,11 @@ public class AccountService {
             return ResponseEntity.badRequest().body("Account Number not Exist....");
         }
 
-        List<Transaction> transactions = transactionRepository.findTransactionsByAccountNumber(accountNumber);
+        Account account = accountRepository.findById(accountNumber).orElse(null);
 
-        if(transactions.isEmpty()){
+        List<Transaction> transactions = account.getTransactions();
+
+        if(transactions == null){
             return ResponseEntity.ok("No transaction found");
         }
 
