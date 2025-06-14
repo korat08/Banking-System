@@ -43,6 +43,23 @@ public class Transaction {
     @CreatedDate
     private LocalDateTime createdAt;
 
+    public Transaction() {
+    }
+
+    public Transaction(Account account, BigDecimal amount, TransactionType transactionType) {
+        this.account = account;
+        this.amount = amount;
+        this.transactionType = transactionType;
+    }
+
+    public Transaction(Account account, TransactionType transactionType, String fromAccountNum, String toAccountNum, BigDecimal amount) {
+        this.account = account;
+        this.transactionType = transactionType;
+        this.fromAccountNum = fromAccountNum;
+        this.toAccountNum = toAccountNum;
+        this.amount = amount;
+    }
+
     public int getTransactionID() {
         return transactionID;
     }

@@ -28,6 +28,10 @@ public class AccountService {
         }
 
         accountRepository.save(account);
+
+        Transaction transaction = new Transaction(account,account.getBalance(),TransactionType.DEPOSIT);
+        transactionRepository.save(transaction);
+
         return ResponseEntity.ok("Account Created Sucessfully...");
     }
 
@@ -45,15 +49,10 @@ public class AccountService {
             return ResponseEntity.badRequest().body("Insufficient balance!");
         }
 
-
         account.setBalance(account.getBalance().subtract(withDrawRequest.getAmount()));
         accountRepository.save(account);
 
-        Transaction transaction = new Transaction();
-        transaction.setAccount(account);
-        transaction.setAmount(withDrawRequest.getAmount());
-        transaction.setTransactionType(TransactionType.WITHDRAW);
-
+        Transaction transaction = new Transaction(account,withDrawRequest.getAmount(),TransactionType.WITHDRAW);
         transactionRepository.save(transaction);
 
         return ResponseEntity.ok("Withdrawal successful! New balance: " + account.getBalance());
@@ -76,11 +75,7 @@ public class AccountService {
         account.setBalance(account.getBalance().add(depositRequest.getAmount()));
         accountRepository.save(account);
 
-        Transaction transaction = new Transaction();
-        transaction.setTransactionType(TransactionType.DEPOSIT);
-        transaction.setAmount(depositRequest.getAmount());
-        transaction.setAccount(account);
-
+        Transaction transaction = new Transaction(account,depositRequest.getAmount(),TransactionType.DEPOSIT);
         transactionRepository.save(transaction);
 
         return ResponseEntity.ok("Deposit successful! New balance: " + account.getBalance());
@@ -102,6 +97,10 @@ public class AccountService {
         Account senderAccount = accountOpt1.get();
         Account receiverAccount = accountOpt2.get();
 
+        if(senderAccount.equals(receiverAccount)){
+            return ResponseEntity.badRequest().body("Sender and Receiver account must be Diffrent....");
+        }
+
         if(senderAccount.getBalance().compareTo(transferRequest.getAmount()) < 0){
             return ResponseEntity.badRequest().body("Insufficient balance!");
         }
@@ -112,15 +111,7 @@ public class AccountService {
         accountRepository.save(senderAccount);
         accountRepository.save(receiverAccount);
 
-        Transaction transaction = new Transaction();
-
-        transaction.setAccount(senderAccount);
-        transaction.setTransactionType(TransactionType.TRANSFER);
-        transaction.setAmount(transferRequest.getAmount());
-
-        transaction.setFromAccountNum(senderAccount.getAccountNumber());
-        transaction.setToAccountNum(receiverAccount.getAccountNumber());
-
+        Transaction transaction = new Transaction(senderAccount,TransactionType.TRANSFER,senderAccount.getAccountNumber(), receiverAccount.getAccountNumber(), transferRequest.getAmount());
         transactionRepository.save(transaction);
 
         return ResponseEntity.ok("Transfer SuccessFully............");
@@ -151,17 +142,11 @@ public class AccountService {
         }
 
         List<TransactionDTO> dtoList = transactions.stream().map(transaction -> {
-            TransactionDTO dto = new TransactionDTO();
-            dto.setTransactionID(transaction.getTransactionID());
-            dto.setAccountNumber(transaction.getAccount().getAccountNumber());
-            dto.setTransactionType(transaction.getTransactionType());
-            dto.setFromAccountNum(transaction.getFromAccountNum());
-            dto.setToAccountNum(transaction.getToAccountNum());
-            dto.setAmount(transaction.getAmount());
-            dto.setCreatedAt(transaction.getCreatedAt());
+            TransactionDTO dto = new TransactionDTO(transaction.getTransactionID(),transaction.getAccount().getAccountNumber(),transaction.getTransactionType(), transaction.getFromAccountNum(),transaction.getToAccountNum(),transaction.getAmount(),transaction.getCreatedAt());
             return dto;
         }).toList();
 
         return ResponseEntity.ok(dtoList);
     }
+
 }

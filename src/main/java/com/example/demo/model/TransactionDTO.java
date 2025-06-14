@@ -14,6 +14,16 @@ public class TransactionDTO {
     private BigDecimal amount;
     private LocalDateTime createdAt;
 
+    public TransactionDTO(int transactionID,String accountNumber, TransactionType transactionType, String fromAccountNum, String toAccountNum, BigDecimal amount, LocalDateTime createdAt) {
+        this.transactionID = transactionID;
+        this.accountNumber = accountNumber;
+        this.transactionType = transactionType;
+        this.fromAccountNum = fromAccountNum;
+        this.toAccountNum = toAccountNum;
+        this.amount = amount;
+        this.createdAt = createdAt;
+    }
+
     public int getTransactionID() {
         return transactionID;
     }
